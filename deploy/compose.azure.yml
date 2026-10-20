@@ -1,0 +1,22 @@
+services:
+  rag:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.rag
+    environment:
+      NODE_API_TOKEN: ${NODE_API_TOKEN:?Set NODE_API_TOKEN}
+      INFERENCE_URL: ${INFERENCE_URL:?Set INFERENCE_URL}
+      EMBED_MODEL: ${EMBED_MODEL:-embeddinggemma}
+      QDRANT_URL: http://qdrant:6333
+    ports:
+      - "${AZURE_BIND_IP:-127.0.0.1}:8001:8001"
+    depends_on:
+      - qdrant
+    restart: unless-stopped
+  qdrant:
+    image: qdrant/qdrant:v1.15.5
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+volumes:
+  qdrant_data:
