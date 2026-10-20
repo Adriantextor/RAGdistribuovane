@@ -125,7 +125,13 @@ V <https://portal.azure.com> vyber Create a resource → Virtual machine.
 GPU, Kubernetes, Azure OpenAI ani platenú spravovanú vektorovú databázu
 nepotrebujeme. Ak B2s nie je dostupná, vyber dostupnú CPU veľkosť s podobnou
 RAM až po kontrole zobrazenej ceny. Kredit automaticky neznamená bezplatnú VM.
+Pri tomto nasadení bola dostupná B2ls_v2 (2 vCPU, 4 GiB) v Spain Central;
+dostupnosť sa líši podľa konkrétneho predplatného a času. Ak Azure vypíše
+`RequestDisallowedByAzure` s obmedzením regiónov, skontroluj v Policy →
+Assignments → Parameters povolené regióny. Povolený región sám ešte
+nezaručuje dostupnú veľkosť ani voľnú vCPU kvótu.
 Nastav rozpočtové upozornenie a auto-shutdown na čas, keď nepracuješ.
+Ak je auto-shutdown v portáli nedostupný, pokračuj bez neho a VM vypínaj ručne.
 Upozornenie na rozpočet samo VM nevypne. Po práci použi v portáli Stop
 a skontroluj stav **Stopped (deallocated)**; disk môže ďalej čerpať kredit.
 Stiahnutý SSH kľúč `.pem` drž mimo repozitára.
@@ -192,6 +198,31 @@ Spustený Tailscale je potrebný pred štartom služby bindovanej na jeho IP.
 
 Po presune do Azure **znova nahraj oba PDF** cez web, pretože Azure má
 vlastný prázdny index. Lokálny index sa automaticky neprenáša.
+
+Frontend môžeš zostaviť príkazom `npm --prefix frontend run build` ešte pred
+štartom aplikačného API. Potom ho aplikácia obsluhuje priamo na
+<http://127.0.0.1:8000> a samostatný Vite terminál už nie je potrebný.
+Na Macu stačí ponechať Ollamu, Docker Desktop, Tailscale a dve služby:
+`scripts/run.py inference` a `scripts/run.py app` (cez `.venv/bin/python`).
+
+## Integračný test skutočných uzlov
+
+Po spustení všetkých služieb a stiahnutí článkov:
+
+```bash
+.venv/bin/python scripts/smoke_test.py --import-papers
+```
+
+Skript skontroluje tri uzly, naimportuje oba články, vytvorí novú reláciu
+a počká na odpoveď so zdrojmi. Pri ďalšom teste import vynechaj:
+
+```bash
+.venv/bin/python scripts/smoke_test.py --question "Ako QLoRA znižuje spotrebu pamäte?"
+```
+
+Výsledok je v ignorovanom `data/last-smoke-test.json`. Test vytvorí skutočnú
+konverzáciu, ktorá zostáva dostupná v histórii webu. Automaticky kontroluje
+dokončenie a prítomnosť zdrojov; obsahovú správnosť odpovede treba posúdiť.
 
 ## 8. Overenie funkčnosti
 
