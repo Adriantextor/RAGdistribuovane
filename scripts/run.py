@@ -20,6 +20,7 @@ load_dotenv(args.env)
 token = os.environ.get("NODE_API_TOKEN", "")
 if len(token) < 32 or token.startswith("replace-"):
     parser.error("Configure a random NODE_API_TOKEN with at least 32 characters")
-host = os.environ.get("MAC_INFERENCE_BIND", "127.0.0.1") if args.node == "inference" else "127.0.0.1"
+host = (os.environ.get("INFERENCE_BIND", os.environ.get("MAC_INFERENCE_BIND", "127.0.0.1"))
+        if args.node == "inference" else os.environ.get("APP_BIND" if args.node == "app" else "RAG_BIND", "127.0.0.1"))
 port = {"app": 8000, "rag": 8001, "inference": 8002}[args.node]
-uvicorn.run(f"services.{args.node}.main:app", host=host, port=port, workers=1)
+uvicorn.run(f"services.{args.node}.main:app", host=host, port=port, workers=1, access_log=False)
